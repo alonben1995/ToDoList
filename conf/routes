@@ -11,6 +11,8 @@ PUT     /todo/done/:itemId          controllers.TodoListController.markAsDone(it
 DELETE  /todo/done                  controllers.TodoListController.deleteAllDone()
 POST    /todo                       controllers.TodoListController.addNewItem()
 POST    /todo/player                controllers.TodoListController.addNewPlayer()
+POST    /api/people                 controllers.TodoListController.addNewPerson()
+GET     /api/people                 controllers.TodoListController.getPeople()
 
 
 # Map static resources from the /public folder to the /assets URL path
