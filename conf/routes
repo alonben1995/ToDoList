@@ -13,7 +13,8 @@ POST    /todo                       controllers.TodoListController.addNewItem()
 POST    /todo/player                controllers.TodoListController.addNewPlayer()
 POST    /api/people                 controllers.TodoListController.addNewPerson()
 GET     /api/people                 controllers.TodoListController.getPeople()
-
+GET     /api/people/:id             controllers.TodoListController.getPerson(id: String)
+PATCH   /api/people/:id             controllers.TodoListController.updatePerson(id: String)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

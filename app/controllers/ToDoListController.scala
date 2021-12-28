@@ -4,6 +4,8 @@ import javax.inject._
 import play.api._
 import play.api.mvc._
 import play.api.libs.json._
+import play.api.libs.json.Reads._
+import play.api.libs.functional.syntax._
 import scala.collection.mutable
 import models.TodoListItem
 import models.NewTodoListItem
@@ -135,7 +137,7 @@ extends BaseController {
 
     }
 
-  // curl -v -d "{\"name\": \"Yossi\", \"email\": \"yos@gmail.com\", \"favoriteProgrammingLanguage\": \"Java\"}" -H "Content-Type:application/json" -X POST localhost:9000/api/people 
+  // curl -v -d "{\"name\": \"Yossi\", \"email\": \"yos@gmail.com\", \"favoriteProgrammingLanguage\": \"Java\"}"  -H "Content-Type:application/json" -X POST localhost:9000/api/people 
     def addNewPerson() = Action 
     { implicit request =>
       val content = request.body
@@ -165,12 +167,65 @@ extends BaseController {
 
     }
 
+    // curl localhost:9000/api/people
     def getPeople() = Action
     {
       val peopleFuture: Future[Seq[PersonDetails]] = db.run(personTable.result)
       val people = Await.result(peopleFuture, 5.seconds)
       val jsonPeople = Json.toJson(people)
       Ok(jsonPeople)
+    }
+
+    // curl localhost:9000/api/people/1
+    def getPerson(id: String) = Action
+    {
+      val personByIdQuery = personTable.filter(_.id === id)
+      val personFuture: Future[Seq[PersonDetails]] = db.run[Seq[PersonDetails]](personByIdQuery.result)
+      val personSeq = Await.result(personFuture, 5.seconds)
+      if (personSeq.length > 0)
+        {
+          val person = personSeq.head
+          val personJson = Json.toJson(person)
+          Ok(personJson)
+        }
+      else NotFound("No person with this id, please try again\n")
+    }
+
+
+    //  curl -v -d "{\"name\": \"YOS\", \"email\": \"YOS@gmail.com\", \"favoriteProgrammingLanguage\": \"Python\"}" -H "Content-Type:application/json" -X PATCH localhost:9000/api/people/1 
+    def updatePerson(id: String) = Action 
+    {
+      // store the recieved data for updating as Json, and then extract the optional fields.
+      implicit request =>
+      val content: AnyContent = request.body
+      val jsonObject: Option[JsValue] = content.asJson
+      val extractedJson: JsValue = jsonObject.get
+      val nameOption = (extractedJson \ "name").asOpt[String]
+      val emailOption = (extractedJson \ "email").asOpt[String]
+      val languageOption = (extractedJson \ "favoriteProgrammingLanguage").asOpt[String]
+
+      // query the person with the input id
+      val personByIdQuery = personTable.filter(_.id === id)
+      val personFuture: Future[Seq[PersonDetails]] = db.run[Seq[PersonDetails]](personByIdQuery.result)
+      val personSeq = Await.result(personFuture, 5.seconds)
+      if (personSeq.length > 0)
+      {
+        if (nameOption.isDefined)
+        {
+          val name = nameOption.get
+        }
+        if (emailOption.isDefined)
+        {
+          val email = emailOption.get
+        }
+        if (languageOption.isDefined)
+        {
+          val language = languageOption.get
+        }
+        NoContent
+      }
+
+      else NotFound("No person with this id, please try again\n")
     }
 
 }
