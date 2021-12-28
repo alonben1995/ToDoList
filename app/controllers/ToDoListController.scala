@@ -135,26 +135,33 @@ extends BaseController {
 
     }
 
-  // curl -v -d "{\"id\": 1, \"name\": \"Yossi\", \"country\": \"Israel\"}" -H "Content-Type:application/json" -X POST localhost:9000/todo/player  
   // curl -v -d "{\"name\": \"Yossi\", \"email\": \"yos@gmail.com\", \"favoriteProgrammingLanguage\": \"Java\"}" -H "Content-Type:application/json" -X POST localhost:9000/api/people 
     def addNewPerson() = Action 
     { implicit request =>
-        val content = request.body
-        val jsonObject = content.asJson
+      val content = request.body
+      val jsonObject = content.asJson
 
-        val newPerson: Option[PersonData] = jsonObject.flatMap(Json.fromJson[PersonData](_).asOpt)
+      val newPerson: Option[PersonData] = jsonObject.flatMap(Json.fromJson[PersonData](_).asOpt)
 
-        newPerson match 
-        {
-            case Some(newPerson) =>
-                personId = personId + 1
-                val toBeAdded = PersonDetails(newPerson.name, newPerson.email,newPerson.favoriteProgrammingLanguage, 0, personId.toString)
-                val insertPlayerQuery = personTable += toBeAdded
-                val insertResult:Future[Int] = db.run(insertPlayerQuery)
-                Created(Json.toJson(toBeAdded))
-            case None =>
-                BadRequest
-        }
+      newPerson match 
+      {
+        case Some(newPerson) =>
+          personId = personId + 1
+          val toBeAdded = PersonDetails(newPerson.name, newPerson.email,newPerson.favoriteProgrammingLanguage, 0, personId.toString)
+          val doesEmailExistQuery = personTable.filter(_.email === newPerson.email)
+          val sameEmailPeopleFuture: Future[Seq[PersonDetails]] = db.run[Seq[PersonDetails]](doesEmailExistQuery.result)
+          val sameEmailPeople = Await.result(sameEmailPeopleFuture, 5.seconds)
+          if (sameEmailPeople.length > 0)
+            BadRequest("A person with this email already exists\n")
+          else 
+          {
+            val insertPlayerQuery = personTable += toBeAdded
+            val insertResult:Future[Int] = db.run(insertPlayerQuery)
+            Created(Json.toJson(toBeAdded))
+          }
+        case None =>
+          BadRequest("invalid data\n")
+      }
 
     }
 
@@ -164,7 +171,6 @@ extends BaseController {
       val people = Await.result(peopleFuture, 5.seconds)
       val jsonPeople = Json.toJson(people)
       Ok(jsonPeople)
-      
     }
 
 }
