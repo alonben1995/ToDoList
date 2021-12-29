@@ -1,16 +1,16 @@
 package models
 
 import slick.jdbc.H2Profile.api._
-/*
-case class taskDetails(name:String, email:String, favoriteProgrammingLanguage: String, 
+
+case class TaskDetails(name:String, email:String, favoriteProgrammingLanguage: String, 
                         activeTaskCount: Int, id: String)
 
-class taskTable(tag: Tag) extends Table[PersonDetails](tag, None, "Person") { 
-    override def * = (name, email, favoriteProgrammingLanguage, activeTaskCount, id) <> (PersonDetails.tupled, PersonDetails.unapply) 
-    val name: Rep[String] = column[String]("Name") 
-    val email: Rep[String] = column[String]("email") 
-    val favoriteProgrammingLanguage: Rep[String] = column[String]("favoriteProgrammingLanguage") 
-    val activeTaskCount: Rep[Int] = column[Int]("activeTaskCount") 
-    val id : Rep[String] = column[String]("PersonId", O.AutoInc, O.PrimaryKey) 
+class TaskTable(tag: Tag) extends Table[TaskDetails](tag, None, "task") { 
+    override def * = (title, details, dueDate, status,ownerID) <> (taskDetails.tupled, taskDetails.unapply) 
+    val title: Rep[String] = column[String]("title") 
+    val details: Rep[String] = column[String]("details") 
+    val dueDate: Rep[String] = column[String]("dueDate")  //maybe change to specific date format
+    val status: Rep[Int] = column[Int]("activeTaskCount") //maybe change to enum
+    val ownerID : Rep[String] = column[String]("ownerID") 
+    def owner = foreignKey("TASK_FK", ownerID, personTable)(_.id, onUpdate=ForeignKeyAction.Restrict, onDelete=ForeignKeyAction.Cascade)
 }
-*/

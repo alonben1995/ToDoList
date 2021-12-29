@@ -15,6 +15,9 @@ import models.PlayerTable
 import models.PersonData
 import models.PersonDetails
 import models.PersonTable
+import models.TaskData
+import models.TaskDetails
+import models.TaskTable
 
 import slick.jdbc.H2Profile.api._
 import slick.jdbc.H2Profile
@@ -29,6 +32,8 @@ extends BaseController {
     implicit val playerJson = Json.format[Player]
     implicit val personDataJson = Json.format[PersonData]
     implicit val personDetailsJson = Json.format[PersonDetails]
+    implicit val taskDetailsJson = Json.format[TaskDetails]
+    implicit val taskDataJson = Json.format[TaskData]
     implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
 
     var personId = 0;
@@ -38,8 +43,10 @@ extends BaseController {
     //val playerTable = TableQuery[PlayerTable]
 
     val personTable = TableQuery[PersonTable]
-
-    val setupPersonTable = db.run(personTable.schema.create)
+    val taskTable = TableQuery[TaskTable]
+    val schemas= personTable.schema ++ taskTable.schema
+    val setupTables = db.run(schemas.create)
+    
     //val germanPlayersQuery = playerTable.filter(_.country === "Germany")
     //val germanPlayers: Future[Seq[Player]] = db.run[Seq[Player]](germanPlayersQuery.result)
     // this doesn't increment id -
@@ -257,6 +264,39 @@ extends BaseController {
       else  NotFound("No person with this id, please try again\n")
       
       
+    }
+
+    def addNewTask(id:String) = Action{
+      //parse request
+       implicit request =>
+      val content = request.body
+      val jsonObject :Option[JsValue] = content.asJson
+       val extractedJson: JsValue = jsonObject.get
+      val titleOption: Option[String] = (extractedJson \ "title").asOpt[String]
+      val detailsOption = (extractedJson \ "details").asOpt[String]
+      val dueDateOption = (extractedJson \ "dueDate").asOpt[String]
+      val statusOption = (extractedJson \ "status").asOpt[String]
+      val newStatus = "active";
+      // query person by ID
+      val personByIdQuery = personTable.filter(_.id === id)
+      val personFuture: Future[Seq[PersonDetails]] = db.run[Seq[PersonDetails]](personByIdQuery.result)
+      val personSeq: Seq[PersonDetails]  = Await.result(personFuture, 5.seconds)
+
+      if (personSeq.length > 0){//if person exists
+          if (statusOption.isDefined)
+        {
+          status =statusOption.get 
+        }
+         val toBeAdded =TaskDetail(titleOption.get,detailsOption.get,dueDateOption.get,status,id)
+         val insertTaskQuery = taskTable += toBeAdded
+            val insertResult:Future[Int] = db.run(insertTaskQuery)\
+            Created(Json.toJson(toBeAdded))
+
+            //not finished, didn't check if working, need to update active task count of id, need to work as a transaction.
+      }
+       
+
+
     }
     
 
