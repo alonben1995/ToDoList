@@ -276,7 +276,7 @@ extends BaseController {
       val detailsOption = (extractedJson \ "details").asOpt[String]
       val dueDateOption = (extractedJson \ "dueDate").asOpt[String]
       val statusOption = (extractedJson \ "status").asOpt[String]
-      val newStatus = "active";
+      var newStatus = "active";
       // query person by ID
       val personByIdQuery = personTable.filter(_.id === id)
       val personFuture: Future[Seq[PersonDetails]] = db.run[Seq[PersonDetails]](personByIdQuery.result)
@@ -284,18 +284,18 @@ extends BaseController {
 
       if (personSeq.length > 0){//if person exists
           if (statusOption.isDefined)
-        {
-          status =statusOption.get 
+        { 
+          newStatus =statusOption.get 
         }
-         val toBeAdded =TaskDetail(titleOption.get,detailsOption.get,dueDateOption.get,status,id)
+         val toBeAdded =TaskDetails(titleOption.get,detailsOption.get,dueDateOption.get,newStatus,id)
          val insertTaskQuery = taskTable += toBeAdded
             val insertResult:Future[Int] = db.run(insertTaskQuery)
             val person : PersonDetails =personSeq.head
-            val taskCount=Person.activeTaskCount
-            if(status === "active"){
+            var taskCount=person.activeTaskCount
+            if(newStatus == "active"){
               taskCount=taskCount+1
             }
-            val updateQuery:personTable.filter(_.id === id).map(_.activeTaskCount).update(taskCount)
+            val updateQuery = personTable.filter(_.id === id).map(_.activeTaskCount).update(taskCount)
             val combinedAction = DBIO.seq(insertTaskQuery, updateQuery)
             val transactionStatus:Future[Unit] = db.run(combinedAction.transactionally)
             Created(Json.toJson(toBeAdded))
