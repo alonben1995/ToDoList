@@ -1,11 +1,11 @@
 package models
 
 import slick.jdbc.H2Profile.api._
-
+/*
 case class taskDetails(name:String, email:String, favoriteProgrammingLanguage: String, 
                         activeTaskCount: Int, id: String)
 
-class PersonTable(tag: Tag) extends Table[PersonDetails](tag, None, "Person") { 
+class taskTable(tag: Tag) extends Table[PersonDetails](tag, None, "Person") { 
     override def * = (name, email, favoriteProgrammingLanguage, activeTaskCount, id) <> (PersonDetails.tupled, PersonDetails.unapply) 
     val name: Rep[String] = column[String]("Name") 
     val email: Rep[String] = column[String]("email") 
@@ -13,3 +13,4 @@ class PersonTable(tag: Tag) extends Table[PersonDetails](tag, None, "Person") {
     val activeTaskCount: Rep[Int] = column[Int]("activeTaskCount") 
     val id : Rep[String] = column[String]("PersonId", O.AutoInc, O.PrimaryKey) 
 }
+*/

@@ -193,6 +193,7 @@ extends BaseController {
 
 
     //  curl -v -d "{\"name\": \"YOS\", \"email\": \"YOS@gmail.com\", \"favoriteProgrammingLanguage\": \"Python\"}" -H "Content-Type:application/json" -X PATCH localhost:9000/api/people/1 
+    //  curl -v -d "{\"favoriteProgrammingLanguage\": \"C\"}" -H "Content-Type:application/json" -X PATCH localhost:9000/api/people/1 
     def updatePerson(id: String) = Action 
     {
       // store the recieved data for updating as Json, and then extract the optional fields.
@@ -226,7 +227,7 @@ extends BaseController {
         if (languageOption.isDefined)
         {
           val language = languageOption.get
-          val updatePersonLanguage = personTable.filter(_.id === id).map(_.favoriteProgrammingLanguagepdate(language)
+          val updatePersonLanguage = personTable.filter(_.id === id).map(_.favoriteProgrammingLanguage).update(language)
           val updateLanguage = db.run(updatePersonLanguage)
         }
         // return the opdated personDetails with code 200 -
@@ -240,7 +241,8 @@ extends BaseController {
       
     }
 
-    def deletePerson(id: string) = Action{
+    //curl -X DELETE localhost:9000/api/people/1 
+    def deletePerson(id: String) = Action{
      
       // query the person with the input id
       val personByIdQuery = personTable.filter(_.id === id)
@@ -248,8 +250,8 @@ extends BaseController {
       val personSeq = Await.result(personFuture, 5.seconds)
       if (personSeq.length > 0){    //if person exists
         val deleteAction = personTable.filter(_.id === id).delete
-        val runDel= db.run(updatePersonName)
-        Ok()
+        val runDel= db.run(deleteAction)
+        Ok("Person removed successfully\n")
 
       }
       else  NotFound("No person with this id, please try again\n")
