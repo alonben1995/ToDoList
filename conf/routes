@@ -15,6 +15,6 @@ POST    /api/people                 controllers.TodoListController.addNewPerson(
 GET     /api/people                 controllers.TodoListController.getPeople()
 GET     /api/people/:id             controllers.TodoListController.getPerson(id: String)
 PATCH   /api/people/:id             controllers.TodoListController.updatePerson(id: String)
-
+DELETE  /api/people/:id             controllers.TodoListController.deletePerson(id: String)
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

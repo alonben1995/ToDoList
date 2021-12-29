@@ -152,7 +152,7 @@ extends BaseController {
           val toBeAdded = PersonDetails(newPerson.name, newPerson.email,newPerson.favoriteProgrammingLanguage, 0, personId.toString)
           val doesEmailExistQuery = personTable.filter(_.email === newPerson.email)
           val sameEmailPeopleFuture: Future[Seq[PersonDetails]] = db.run[Seq[PersonDetails]](doesEmailExistQuery.result)
-          val sameEmailPeople = Await.result(sameEmailPeopleFuture, 5.seconds)
+          val sameEmailPeople: Seq[PersonDetails] = Await.result(sameEmailPeopleFuture, 5.seconds)
           if (sameEmailPeople.length > 0)
             BadRequest("A person with this email already exists\n")
           else 
@@ -181,7 +181,7 @@ extends BaseController {
     {
       val personByIdQuery = personTable.filter(_.id === id)
       val personFuture: Future[Seq[PersonDetails]] = db.run[Seq[PersonDetails]](personByIdQuery.result)
-      val personSeq = Await.result(personFuture, 5.seconds)
+      val personSeq: Seq[PersonDetails] = Await.result(personFuture, 5.seconds)
       if (personSeq.length > 0)
         {
           val person = personSeq.head
@@ -200,33 +200,63 @@ extends BaseController {
       val content: AnyContent = request.body
       val jsonObject: Option[JsValue] = content.asJson
       val extractedJson: JsValue = jsonObject.get
-      val nameOption = (extractedJson \ "name").asOpt[String]
+      val nameOption: Option[String] = (extractedJson \ "name").asOpt[String]
       val emailOption = (extractedJson \ "email").asOpt[String]
       val languageOption = (extractedJson \ "favoriteProgrammingLanguage").asOpt[String]
 
       // query the person with the input id
       val personByIdQuery = personTable.filter(_.id === id)
       val personFuture: Future[Seq[PersonDetails]] = db.run[Seq[PersonDetails]](personByIdQuery.result)
-      val personSeq = Await.result(personFuture, 5.seconds)
+      val personSeq: Seq[PersonDetails]  = Await.result(personFuture, 5.seconds)
       if (personSeq.length > 0)
       {
+        // update optional fields which we received data for - 
         if (nameOption.isDefined)
         {
           val name = nameOption.get
+          val updatePersonName = personTable.filter(_.id === id).map(_.name).update(name)
+          val updateName = db.run(updatePersonName)
         }
         if (emailOption.isDefined)
         {
           val email = emailOption.get
+          val updatePersonEmail = personTable.filter(_.id === id).map(_.email).update(email)
+          val updateEmail = db.run(updatePersonEmail)
         }
         if (languageOption.isDefined)
         {
           val language = languageOption.get
+          val updatePersonLanguage = personTable.filter(_.id === id).map(_.favoriteProgrammingLanguagepdate(language)
+          val updateLanguage = db.run(updatePersonLanguage)
         }
-        NoContent
+        // return the opdated personDetails with code 200 -
+        val personFuture: Future[Seq[PersonDetails]] = db.run[Seq[PersonDetails]](personByIdQuery.result)
+        val personSeq: Seq[PersonDetails] = Await.result(personFuture, 5.seconds)
+        val person = personSeq.head
+        val personJson = Json.toJson(person)
+        Ok(personJson)
       }
-
       else NotFound("No person with this id, please try again\n")
+      
     }
+
+    def deletePerson(id: string) = Action{
+     
+      // query the person with the input id
+      val personByIdQuery = personTable.filter(_.id === id)
+      val personFuture: Future[Seq[PersonDetails]] = db.run[Seq[PersonDetails]](personByIdQuery.result)
+      val personSeq = Await.result(personFuture, 5.seconds)
+      if (personSeq.length > 0){    //if person exists
+        val deleteAction = personTable.filter(_.id === id).delete
+        val runDel= db.run(updatePersonName)
+        Ok()
+
+      }
+      else  NotFound("No person with this id, please try again\n")
+      
+      
+    }
+    
 
 }
 
