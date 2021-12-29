@@ -289,11 +289,21 @@ extends BaseController {
         }
          val toBeAdded =TaskDetail(titleOption.get,detailsOption.get,dueDateOption.get,status,id)
          val insertTaskQuery = taskTable += toBeAdded
-            val insertResult:Future[Int] = db.run(insertTaskQuery)\
+            val insertResult:Future[Int] = db.run(insertTaskQuery)
+            val person : PersonDetails =personSeq.head
+            val taskCount=Person.activeTaskCount
+            if(status === "active"){
+              taskCount=taskCount+1
+            }
+            val updateQuery:personTable.filter(_.id === id).map(_.activeTaskCount).update(taskCount)
+            val combinedAction = DBIO.seq(insertTaskQuery, updateQuery)
+            val transactionStatus:Future[Unit] = db.run(combinedAction.transactionally)
             Created(Json.toJson(toBeAdded))
 
-            //not finished, didn't check if working, need to update active task count of id, need to work as a transaction.
+    
       }
+      else  NotFound("No person with this id, please try again\n")
+           
        
 
 
