@@ -266,6 +266,7 @@ extends BaseController {
       
       
     }
+
     //curl -v -d "{\"title\": \"Homework\", \"details\": \"finish the assignments\", \"dueDate\": \"2021-12-30\", \"status\": \"active\"}"  -H "Content-Type:application/json" -X POST localhost:9000/api/people/1/tasks 
     def addNewTask(id:String) = Action{
       //parse request
@@ -310,6 +311,7 @@ extends BaseController {
 
 
     }
+
     //curl localhost:9000/api/people/1/tasks?status=done
     //curl localhost:9000/api/people/1/tasks?status=active
     //curl localhost:9000/api/people/1/tasks
@@ -338,5 +340,76 @@ extends BaseController {
 
     
     }
+
+    // curl localhost:9000/api/tasks/1
+    def getTask(id: String) =Action{
+      val taskByIdQuery = taskTable.filter(_.id === id)
+      val taskFuture: Future[Seq[TaskDetails]] = db.run[Seq[TaskDetails]](taskByIdQuery.result)
+      val taskSeq: Seq[TaskDetails] = Await.result(taskFuture, 5.seconds)
+      if (taskSeq.length > 0)
+        {
+          val task = taskSeq.head
+          val taskJson = Json.toJson(task)
+          Ok(taskJson)
+        }
+      else NotFound("No task with this id, please try again\n")
+    }
+    
+    //curl -v -d "{\"title\": \"paying bills\", \"details\": \"water and electricity\", \"dueDate\": \"2021-11-04\"}" -H "Content-Type:application/json" -X PATCH localhost:9000/api/tasks/1 
+    //curl -v -d "{\"details\": \"details updated\"}" -H "Content-Type:application/json" -X PATCH localhost:9000/api/tasks/1 
+    def updateTask(id: String) = Action 
+    {
+      // store the recieved data for updating as Json, and then extract the optional fields.
+      implicit request =>
+      val content: AnyContent = request.body
+      val jsonObject: Option[JsValue] = content.asJson
+      val extractedJson: JsValue = jsonObject.get
+      val titleOption: Option[String] = (extractedJson \ "title").asOpt[String]
+      val detailsOption = (extractedJson \ "details").asOpt[String]
+      val dueDateOption = (extractedJson \ "dueDate").asOpt[String]
+      val statusOption = (extractedJson \ "status").asOpt[String]
+
+      // query the task with the input id
+      val taskByIdQuery = taskTable.filter(_.id === id)
+      val taskFuture: Future[Seq[TaskDetails]] = db.run[Seq[TaskDetails]](taskByIdQuery.result)
+      val taskSeq: Seq[TaskDetails]  = Await.result(taskFuture, 5.seconds)
+      if (taskSeq.length > 0)
+      {
+        // update optional fields which we received data for - 
+        if (titleOption.isDefined)
+        {
+          val title = titleOption.get
+          val updateTaskTitle = taskTable.filter(_.id === id).map(_.title).update(title)
+          val updateTitle = db.run(updateTaskTitle)
+        }
+        if (detailsOption.isDefined)
+        {
+          val details = detailsOption.get
+          val updateTaskDetails = taskTable.filter(_.id === id).map(_.details).update(details)
+          val updateDetails = db.run(updateTaskDetails)
+        }
+        if (dueDateOption.isDefined)
+        {
+          val dueDate = dueDateOption.get
+          val updateTaskDueDate = taskTable.filter(_.id === id).map(_.dueDate).update(dueDate)
+          val updateDueDate = db.run(updateTaskDueDate)
+        }
+        if (statusOption.isDefined)
+        {
+          val status = statusOption.get
+          val updateTaskStatus = taskTable.filter(_.id === id).map(_.status).update(status)
+          val updateDueDate = db.run(updateTaskStatus)
+        }
+        // return the updated taskDetails with code 200 -
+        val taskFuture: Future[Seq[TaskDetails]] = db.run[Seq[TaskDetails]](taskByIdQuery.result)
+        val taskSeq: Seq[TaskDetails] = Await.result(taskFuture, 5.seconds)
+        val task = taskSeq.head
+        val taskJson = Json.toJson(task)
+        Ok(taskJson)
+      }
+      else NotFound("No task with this id, please try again\n")
+      
+    }
+
 }
 
