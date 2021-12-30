@@ -37,6 +37,7 @@ extends BaseController {
     implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
 
     var personId = 0;
+    var taskId = 0;
 
     // database stuff - //
     val db = Database.forConfig("h2mem")
@@ -265,7 +266,7 @@ extends BaseController {
       
       
     }
-
+    //curl -v -d "{\"title\": \"Homework\", \"details\": \"finish the assignments\", \"dueDate\": \"2021-12-30\", \"status\": \"active\"}"  -H "Content-Type:application/json" -X POST localhost:9000/api/people/1/tasks 
     def addNewTask(id:String) = Action{
       //parse request
        implicit request =>
@@ -287,7 +288,8 @@ extends BaseController {
         { 
           newStatus =statusOption.get 
         }
-         val toBeAdded =TaskDetails(titleOption.get,detailsOption.get,dueDateOption.get,newStatus,id)
+         taskId=taskId +1 
+         val toBeAdded =TaskDetails(titleOption.get,detailsOption.get,dueDateOption.get,newStatus,id,taskId.toString)
          val insertTaskQuery = taskTable += toBeAdded
             val insertResult:Future[Int] = db.run(insertTaskQuery)
             val person : PersonDetails =personSeq.head
@@ -308,7 +310,33 @@ extends BaseController {
 
 
     }
-    
+    //curl localhost:9000/api/people/1/tasks?status=done
+    //curl localhost:9000/api/people/1/tasks?status=active
+    //curl localhost:9000/api/people/1/tasks
+    def getTasksofPerson(id:String,status:Option[String]=None)= Action{
+      val personByIdQuery = personTable.filter(_.id === id)
+      val personFuture: Future[Seq[PersonDetails]] = db.run[Seq[PersonDetails]](personByIdQuery.result)
+      val personSeq: Seq[PersonDetails]  = Await.result(personFuture, 5.seconds)
 
+      if (personSeq.length > 0){//if person exists
+        status match{
+          case None => 
+              val tasksFuture: Future[Seq[TaskDetails]] = db.run(taskTable.filter(_.ownerID === id).result)
+              val tasks = Await.result(tasksFuture, 5.seconds)
+               val jsontasks = Json.toJson(tasks)
+               Ok(jsontasks)
+          
+          case Some(value) =>
+               val tasksFuture: Future[Seq[TaskDetails]] = db.run(taskTable.filter(_.ownerID === id).filter(_.status === value).result)
+               val tasks = Await.result(tasksFuture, 5.seconds)
+               val jsontasks = Json.toJson(tasks)
+               Ok(jsontasks)
+       
+        }
+    }
+     else  NotFound("No person with this id, please try again\n")
+
+    
+    }
 }
 
