@@ -292,7 +292,7 @@ extends BaseController {
          taskId=taskId +1 
          val toBeAdded =TaskDetails(titleOption.get,detailsOption.get,dueDateOption.get,newStatus,id,taskId.toString)
          val insertTaskQuery = taskTable += toBeAdded
-            val insertResult:Future[Int] = db.run(insertTaskQuery)
+            // val insertResult:Future[Int] = db.run(insertTaskQuery)
             val person : PersonDetails =personSeq.head
             var taskCount=person.activeTaskCount
             if(newStatus == "active"){
@@ -408,6 +408,39 @@ extends BaseController {
         Ok(taskJson)
       }
       else NotFound("No task with this id, please try again\n")
+      
+    }
+
+     //curl -X DELETE localhost:9000/api/tasks/1 
+    def deleteTask(id: String) = Action{
+     
+      // query the person with the input id
+      val taskByIdQuery = taskTable.filter(_.id === id)
+      val taskFuture: Future[Seq[TaskDetails]] = db.run[Seq[TaskDetails]](taskByIdQuery.result)
+      val taskSeq = Await.result(taskFuture, 5.seconds)
+      if (taskSeq.length > 0){    //if person exists
+        val task= taskSeq.head
+        val taskOwner=task.ownerID
+        val taskStatus=task.status
+        //query owner of the task
+        val personByIdQuery = personTable.filter(_.id === taskOwner)
+        val personFuture: Future[Seq[PersonDetails]] = db.run[Seq[PersonDetails]](personByIdQuery.result)
+        val personSeq: Seq[PersonDetails]  = Await.result(personFuture, 5.seconds)
+        val owner =personSeq.head
+        var activeTaskCount=owner.activeTaskCount
+        if(taskStatus == "active"){ // decrement owner's active task count
+          activeTaskCount=activeTaskCount-1
+        }
+        val deleteAction = taskTable.filter(_.id === id).delete
+        val updateAction = personTable.filter(_.id === taskOwner).map(_.activeTaskCount).update(activeTaskCount)
+            val combinedAction = DBIO.seq(deleteAction, updateAction)
+            val transactionStatus:Future[Unit] = db.run(combinedAction.transactionally)
+        
+        Ok("task removed successfully\n")
+
+      }
+      else  NotFound("No person with this id, please try again\n")
+      
       
     }
 
