@@ -414,7 +414,7 @@ extends BaseController {
      //curl -X DELETE localhost:9000/api/tasks/1 
     def deleteTask(id: String) = Action{
      
-      // query the person with the input id
+      // query the task with the input id
       val taskByIdQuery = taskTable.filter(_.id === id)
       val taskFuture: Future[Seq[TaskDetails]] = db.run[Seq[TaskDetails]](taskByIdQuery.result)
       val taskSeq = Await.result(taskFuture, 5.seconds)
@@ -443,6 +443,37 @@ extends BaseController {
       
       
     }
+    //curl localhost:9000/api/tasks/1/status
+    def getTaskStatus(id: String) = Action{
+         // query the task with the input id
+        val taskByIdQuery = taskTable.filter(_.id === id)
+        val taskFuture: Future[Seq[TaskDetails]] = db.run[Seq[TaskDetails]](taskByIdQuery.result)
+        val taskSeq = Await.result(taskFuture, 5.seconds)
+        if (taskSeq.length > 0){    //if person exists
+          val task= taskSeq.head
+          val taskStatus=task.status
+          Ok(taskStatus)
+
+        }
+        else  NotFound("No task with this id, please try again\n")
+
+}
+  
+   //curl localhost:9000/api/tasks/1/owner
+   def getTaskOwner(id: String) = Action{
+         // query the task with the input id
+        val taskByIdQuery = taskTable.filter(_.id === id)
+        val taskFuture: Future[Seq[TaskDetails]] = db.run[Seq[TaskDetails]](taskByIdQuery.result)
+        val taskSeq = Await.result(taskFuture, 5.seconds)
+        if (taskSeq.length > 0){    //if person exists
+          val task= taskSeq.head
+          val taskOwner=task.ownerID
+          Ok(taskOwner)
+
+    }
+        else  NotFound("No task with this id, please try again\n")
+
+}
 
 }
 

@@ -20,7 +20,9 @@ POST    /api/people/:id/tasks       controllers.TodoListController.addNewTask(id
 GET     /api/people/:id/tasks       controllers.TodoListController.getTasksofPerson(id:String,status:Option[String])
 GET     /api/tasks/:id              controllers.TodoListController.getTask(id: String)
 PATCH   /api/tasks/:id              controllers.TodoListController.updateTask(id: String)
-DELETE  /api/tasks/:id             controllers.TodoListController.deleteTask(id: String)
+DELETE  /api/tasks/:id              controllers.TodoListController.deleteTask(id: String)
+GET     /api/tasks/:id/owner        controllers.TodoListController.getTaskOwner(id: String)
+GET     /api/tasks/:id/status        controllers.TodoListController.getTaskStatus(id: String)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
