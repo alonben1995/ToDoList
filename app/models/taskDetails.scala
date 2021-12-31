@@ -3,6 +3,8 @@ package models
 import slick.jdbc.H2Profile.api._
 import models.PersonDetails
 import models.PersonTable
+import models.status
+
 
 case class TaskDetails(title:String, details:String, dueDate: String, 
                         status: String, ownerID: String,id:String)
