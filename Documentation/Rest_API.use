@@ -1,0 +1,44 @@
+model REST_API
+
+
+class TaskDetails
+	attributes
+	    id: String
+		ownerId: String
+		status: String
+		details: String
+		dueDate: Date
+end
+
+class PersonDetails
+	attributes
+		id: String
+		name: String
+		email: String
+		favouriteProgrammingLanguage: String
+end
+
+enum Status {active, done}
+
+class Date
+attributes
+		day: Integer
+		month: Integer
+		year: Integer
+end
+
+-----------------------------------------------Associations---------------------------------------------------------
+
+association ownedBy between
+	TaskDetails[0..*] role tasks
+	PersonDetails[0..1] role person
+end
+
+
+
+
+
+
+
+
+

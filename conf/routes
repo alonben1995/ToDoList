@@ -3,14 +3,6 @@
 # https://www.playframework.com/documentation/latest/ScalaRouting
 # ~~~~
 
-# An example controller showing a sample home page
-GET     /                           controllers.HomeController.index()
-GET     /todo                       controllers.TodoListController.getAll()
-GET     /todo/:itemId               controllers.TodoListController.getById(itemId: Long)
-PUT     /todo/done/:itemId          controllers.TodoListController.markAsDone(itemId: Long)
-DELETE  /todo/done                  controllers.TodoListController.deleteAllDone()
-POST    /todo                       controllers.TodoListController.addNewItem()
-POST    /todo/player                controllers.TodoListController.addNewPlayer()
 POST    /api/people                 controllers.TodoListController.addNewPerson()
 GET     /api/people                 controllers.TodoListController.getPeople()
 GET     /api/people/:id             controllers.TodoListController.getPerson(id: String)
