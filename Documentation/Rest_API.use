@@ -15,6 +15,7 @@ class PersonDetails
 		id: String
 		name: String
 		email: String
+		activeTaskCount: Integer
 		favouriteProgrammingLanguage: String
 end
 

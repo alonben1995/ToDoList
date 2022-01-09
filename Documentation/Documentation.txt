@@ -1,9 +1,0 @@
-This git repository containts an implementation of a simple task manager RESTful API.
-The flow of the system is as follows:
-Upon receiving an http request, for example - 
-curl localhost:9000/api/people 
-the input wil first be received via our conf/routes, which will then give pass control to our controller 
-app/controllers/ToDoListController to the relevant function, according to the input url from the request,
-and will also pass on any additional data and paramters provided in the request.
-The controller will apply the relevant logic using the input provided, and will return a relevant
-HTTP code, and possibly additional data, back to the the sender of the request.
