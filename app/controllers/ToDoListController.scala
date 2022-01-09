@@ -18,14 +18,14 @@ import java.time.LocalDate
 @Singleton
 class TodoListController @Inject()(val controllerComponents: ControllerComponents)
 extends BaseController {
-    // definition of Json formatters for easy json parsing into each our case classes -   
+    // definition of Json formatters for easy json parsing into each of our case classes -   
     implicit val personDataJson = Json.format[PersonData]
     implicit val personDetailsJson = Json.format[PersonDetails]
     implicit val taskDetailsJson = Json.format[TaskDetails]
     implicit val taskDataJson = Json.format[TaskData]
     implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
 
-    // counters for new people / tasks, incremented when added.
+    // counters for new people / task ID's, incremented when added.
     var personId = 0;
     var taskId = 0;
 
@@ -56,6 +56,8 @@ extends BaseController {
       taskSeq
     }
 
+    // each of the following functions is the implementation for a relevant HTTP request, along with test cases for convenience
+    
     /* test cases -
      curl -v -d "{\"name\": \"Yossi\", \"email\": \"yos@gmail.com\", \"favoriteProgrammingLanguage\": \"Java\"}"  -H "Content-Type:application/json" -X POST localhost:9000/api/people 
      curl -v -d "{\"name\": \"Gil\", \"email\": \"gil@gmail.com\", \"favoriteProgrammingLanguage\": \"C++\"}"  -H "Content-Type:application/json" -X POST localhost:9000/api/people 
