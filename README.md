@@ -1,1 +1,1 @@
-# miniProject_Alon
+# REST API Mini-Project
